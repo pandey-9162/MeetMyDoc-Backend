@@ -20,7 +20,7 @@ connectDB();
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: https://meetmydoc-backend-1.onrender.com
+  origin: "https://meetmydoc-backend-1.onrender.com"
 }));
 app.use(bodyParser.json());
 authorize();
