@@ -19,9 +19,20 @@ connectDB();
 
 // Middleware
 app.use(express.json());
-app.use(cors({
-  origin: "https://meetmydoc-backend-1.onrender.com"
-}));
+const allowedOrigins = ['https://66939b56b61ecdf108f3c1a4--lucky-tulumba-ee81de.netlify.app'];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+};
+
+app.use(cors(corsOptions));
+
 app.use(bodyParser.json());
 authorize();
 
