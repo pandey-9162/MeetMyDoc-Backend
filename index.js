@@ -19,7 +19,7 @@ connectDB();
 
 // Middleware
 app.use(express.json());
-const allowedOrigins = ['https://famous-rugelach-57a64e.netlify.app/'];
+const allowedOrigins = ['https://famous-rugelach-57a64e.netlify.app','https://66939b56b61ecdf108f3c1a4--lucky-tulumba-ee81de.netlify.app','https://lucky-tulumba-ee81de.netlify.app'];
 
 const corsOptions = {
   origin: function (origin, callback) {
