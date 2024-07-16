@@ -20,7 +20,7 @@ connectDB();
 app.use(express.json());
 app.use(bodyParser.json());
 
-const allowedOrigins = ['https://famous-rugelach-57a64e.netlify.app','https://famous-rugelach-57a64e.netlify.app/','https://meetmydoc-connecturdoctor.netlify.app','https://meetmydoc-connecturdoctor.netlify.app/'];
+const allowedOrigins = ['https://meetmydoc-anytime.netlify.app','https://meetmydoc-anytime.netlify.app'];
 
 const corsOptions = {
   origin: function (origin, callback) {
