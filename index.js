@@ -8,9 +8,9 @@ const { authorize, createEvent, oAuth2Client } = require('./meeting');
 const Doctor = require('./models/Doctor');
 const Meeting = require('./models/Meeting');
 const dotenv = require('dotenv');
+const { sendMail, sendMailToDoctor } = require('./server'); // Updated import
 dotenv.config();
 const TOKEN_PATH = process.env.TOKEN_PATH;
-// const {login} = require("./routes/user.auth");
 const app = express();
 const port = process.env.PORT;
 
@@ -19,7 +19,9 @@ connectDB();
 
 // Middleware
 app.use(express.json());
-const allowedOrigins = ['https://famous-rugelach-57a64e.netlify.app','https://66939b56b61ecdf108f3c1a4--lucky-tulumba-ee81de.netlify.app','https://lucky-tulumba-ee81de.netlify.app'];
+app.use(bodyParser.json());
+
+const allowedOrigins = ['http://localhost:3000'];
 
 const corsOptions = {
   origin: function (origin, callback) {
@@ -32,11 +34,9 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Enable preflight requests for all routes
 
-app.use(bodyParser.json());
 authorize();
-
-
 
 app.get('/oauth2callback', (req, res) => {
   const code = req.query.code;
@@ -51,56 +51,13 @@ app.get('/oauth2callback', (req, res) => {
   });
 });
 
-// Register Route
-// app.post('/register', async (req, res) => {
-//   const { name, email, password } = req.body;
-//   const existingUser = await User.findOne({ email });
-//   if (existingUser) {
-//     return res.status(400).json({ msg: 'User already exists' });
-//   }
-
-//   try {
-//     const user = await User.create({ name, email, password });
-//     res.status(200).json({ msg: 'User registered successfully' });
-//   } catch (err) {
-//     console.error("Error registering user:", err);
-//     res.status(500).json({ msg: 'Server error' });
-//   }
-// });
-
 const userRoute = require('./routes/user');
 app.use('/api', userRoute);
 
-// Get Doctors Route
-// app.get('/api/doctors', async (req, res) => {
-//   try {
-//     const doctors = await Doctor.find();
-//     res.json(doctors);
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// });
-
 app.use('/api', require('./routes/auth'));
-
-// router.post('/login', login);
-// app.post('/login', async (req, res) => {
-//   const { email, password } = req.body;
-//   try {
-//     const user = await User.findOne({ email });
-//     if (!user) return res.status(400).json({ msg: "User not found" });
-//     if (password !== user.password) return res.status(400).json({ msg: "Incorrect password" });
-//     res.status(200).send(user);
-//   } catch (err) {
-//     console.error("Error logging in:", err);
-//     res.status(500).json({ msg: 'Server error' });
-//   }
-// });
-
-// Schedule Meeting Route
 app.post('/api/schedule-meeting', async (req, res) => {
   const { userEmail, doctorId, slot } = req.body;
-  
+
   try {
     if (!userEmail || !doctorId || !slot) {
       return res.status(400).json({ message: 'Missing required fields' });
@@ -136,7 +93,8 @@ app.post('/api/schedule-meeting', async (req, res) => {
     };
 
     oAuth2Client.getAccessToken().then(() => {
-        createEvent(eventDetails, async (err, event) => {
+      createEvent(eventDetails, 
+        async (err, event) => {
           if (err) {
             return res.status(500).json({ message: 'Failed to create calendar event', error: err });
           }
@@ -146,13 +104,11 @@ app.post('/api/schedule-meeting', async (req, res) => {
               user: user._id,
               doctor: doctor._id,
               slot,
-              eventLink: event.data.htmlLink, // Store the event link
+              eventLink: event.data.htmlLink,
             });
 
             await newMeeting.save();
-            // await Doctor.findByIdAndUpdate(doctorId, {
-            //   $pull: { availableSlots: slot }
-            // });
+
             try {
               const doctor = await Doctor.findById(doctorId);
               if (!Array.isArray(doctor.availableSlots)) {
@@ -172,14 +128,22 @@ app.post('/api/schedule-meeting', async (req, res) => {
               console.error('Error updating doctor:', error);
             }
 
+            // Send email notifications
+            try {
+              await sendMail(userEmail, startDateTime, user.name, doctor.name, event.data.htmlLink);
+              await sendMailToDoctor(doctor.email, startDateTime, user.name, doctor.name, event.data.htmlLink);
+            } catch (emailErr) {
+              console.error('Error sending email:', emailErr);
+            }
+
             res.status(200).json({ message: 'Meeting scheduled successfully', eventLink: event.data.htmlLink });
           } catch (saveErr) {
             res.status(500).json({ message: 'Failed to save meeting', error: saveErr });
           }
         });
     }).catch(err => {
-        console.error('Error refreshing access token:', err);
-        res.status(500).json({ message: 'Failed to refresh access token', error: err });
+      console.error('Error refreshing access token:', err);
+      res.status(500).json({ message: 'Failed to refresh access token', error: err });
     });
 
   } catch (error) {
