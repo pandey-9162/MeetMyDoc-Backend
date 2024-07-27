@@ -37,10 +37,10 @@ app.use(cors(corsOptions));
 app.use(express.json());
 router.use(cors(corsOptions));
 
-// const MERCHANT_ID = "PGTESTPAYUAT115";
-// const PHONE_PE_HOST_URL = "https://api-preprod.phonepe.com/apis/pg-sandbox";
-// const SALT_KEY = "f94f0bb9-bcfb-4077-adc0-3f8408a17bf7";
-// const APP_BE_URL = "http://localhost:3000";
+const MERCHANT_ID = "PGTESTPAYUAT115";
+const PHONE_PE_HOST_URL = "https://api-preprod.phonepe.com/apis/pg-sandbox";
+const SALT_KEY = "f94f0bb9-bcfb-4077-adc0-3f8408a17bf7";
+const APP_BE_URL = "http://localhost:3000";
 
 const generateChecksum = (payload, endpoint) => {
   const string = `${payload}${endpoint}${SALT_KEY}`;
@@ -53,16 +53,16 @@ router.post("/pay", basicAuth, async (req, res) => {
   const { userId, amount} = req.body;
   const merchantTransactionId = uniqid();
 
-  // const payload = {
-  //   merchantId: MERCHANT_ID,
-  //   merchantTransactionId,
-  //   merchantUserId: userId,
-  //   amount: amount * 100, 
-  //   redirectUrl: `${APP_BE_URL}/payment/validate/${merchantTransactionId}`,
-  //   redirectMode: "REDIRECT",
-  //   mobileNumber: "9999999999",
-  //   paymentInstrument: { type: "PAY_PAGE" },
-  // };
+  const payload = {
+    merchantId: MERCHANT_ID,
+    merchantTransactionId,
+    merchantUserId: userId,
+    amount: amount * 100, 
+    redirectUrl: `${APP_BE_URL}/payment/validate/${merchantTransactionId}`,
+    redirectMode: "REDIRECT",
+    mobileNumber: "9999999999",
+    paymentInstrument: { type: "PAY_PAGE" },
+  };
 
   const base64EncodedPayload = Buffer.from(JSON.stringify(payload), "utf8").toString("base64");
   const xVerifyChecksum = generateChecksum(base64EncodedPayload, '/pg/v1/pay');
