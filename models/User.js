@@ -13,10 +13,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "password is require"],
   },
-  credits: {
+  mobile_no: {
     type: Number,
     default: 0
   },
+  age:{
+    type:Number
+  }
 });
 
 const User = mongoose.model("User", userSchema);
