@@ -21,7 +21,7 @@ connectDB();
 app.use(express.json());
 app.use(bodyParser.json());
 
-const allowedOrigins = ['https://meetmydoc-vaidya.netlify.app','https://meetmydoc-vaidya.netlify.app/'];
+const allowedOrigins = ['https://meetmydoc-vaidya.netlify.app','https://meeturdoc.com'];
 
 const corsOptions = {
   origin: function (origin, callback) {
