@@ -78,10 +78,10 @@ function createEvent(eventDetails, callback) {
     }, (err, event) => {
         if (err) {
             console.error('There was an error creating the calendar event:', err);
-            return callback(err);  // Pass error to the callback
+            return callback(err); 
         }
         console.log('Event created: %s', event.data.htmlLink);
-        callback(null, event);  // Pass event data to the callback
+        callback(null, event); 
     });
 }
 

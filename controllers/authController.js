@@ -1,11 +1,11 @@
 const User = require('../models/User');
+const Point = require('../models/points');
 const bcrypt = require('bcrypt');
 const dotenv = require('dotenv');
-
 dotenv.config();
 
 const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, mobile_no, age } = req.body;
 
   try {
     let user = await User.findOne({ email });
@@ -17,13 +17,22 @@ const register = async (req, res) => {
       name,
       email,
       password,
-      credits: 0,
+      mobile_no,
+      age
     });
 
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
 
     await user.save();
+
+    const point = new Point({
+      user: user._id,
+      credit: 0, 
+      last_recharge: null 
+    });
+
+    await point.save();
 
     res.json(user);
   } catch (error) {

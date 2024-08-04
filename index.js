@@ -8,20 +8,25 @@ const { authorize, createEvent, oAuth2Client } = require('./meeting');
 const Doctor = require('./models/Doctor');
 const Meeting = require('./models/Meeting');
 const dotenv = require('dotenv');
-const { sendMail, sendMailToDoctor } = require('./server'); 
+const paymentRoutes = require('./routes/payment');
+const Transaction = require("./models/Transaction");
+const Point = require('./models/points');
+const path = require("path");
+// const { sendMail, sendMailToDoctor } = require('./mail');
+
 dotenv.config();
 const TOKEN_PATH = process.env.TOKEN_PATH;
 const app = express();
 const port = process.env.PORT;
+app.use(express.static(path.join(__dirname, 'frontend/build')));
 
-// Connect to database
+
 connectDB();
-
-// Middleware
 app.use(express.json());
 app.use(bodyParser.json());
 
-const allowedOrigins = ['https://meetmydoc-vaidya.netlify.app','https://meeturdoc.com'];
+
+const allowedOrigins = ['https://meeturdoc.com'];
 
 const corsOptions = {
   origin: function (origin, callback) {
@@ -34,9 +39,13 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Enable preflight requests for all routes
+app.options('*', cors(corsOptions));
+
+
 
 authorize();
+
+
 
 app.get('/oauth2callback', (req, res) => {
   const code = req.query.code;
@@ -51,10 +60,9 @@ app.get('/oauth2callback', (req, res) => {
   });
 });
 
-const userRoute = require('./routes/user');
-app.use('/api', userRoute);
-
 app.use('/api', require('./routes/auth'));
+app.use("/payment", paymentRoutes);
+
 app.post('/api/schedule-meeting', async (req, res) => {
   const { userEmail, doctorId, slot } = req.body;
 
@@ -129,12 +137,12 @@ app.post('/api/schedule-meeting', async (req, res) => {
             }
 
             // Send email notifications
-            try {
-              await sendMail(userEmail, startDateTime, user.name, doctor.name, event.data.htmlLink);
-              await sendMailToDoctor(doctor.email, startDateTime, user.name, doctor.name, event.data.htmlLink);
-            } catch (emailErr) {
-              console.error('Error sending email:', emailErr);
-            }
+            // try {
+            //   await sendMail(userEmail, startDateTime, user.name, doctor.name, event.data.htmlLink);
+            //   await sendMailToDoctor(doctor.email, startDateTime, user.name, doctor.name, event.data.htmlLink);
+            // } catch (emailErr) {
+            //   console.error('Error sending email:', emailErr);
+            // }
 
             res.status(200).json({ message: 'Meeting scheduled successfully', eventLink: event.data.htmlLink });
           } catch (saveErr) {
@@ -152,18 +160,40 @@ app.post('/api/schedule-meeting', async (req, res) => {
   }
 });
 
-// appointment Route
-app.get('/api/appointments', async (req, res) => {
+app.get('/api/paymentHistory', async (req, res) => {
   const { userId } = req.query;
+  console.log(userId);
+  if (!userId) {
+    return res.status(400).json({ message: 'User ID is required' });
+  }
+
+  console.log('Fetching payment history for user ID:', userId);
 
   try {
-    const appointments = await Meeting.find({ user: userId }).populate('doctor').populate('user');
-    res.status(200).json(appointments);
+    const history = await Transaction.find({ userId });
+    console.log('Payment history fetched:', history);
+    res.status(200).json(history);
   } catch (error) {
-    console.error('Error fetching appointments:', error);
-    res.status(500).json({ message: 'Failed to fetch appointments' });
+    console.error('Error fetching payment history:', error);
+    res.status(500).json({ message: 'Failed to fetch payment history' });
   }
 });
 
-// Start the server
+
+// app.get('/api/appointments', async (req, res) => {
+//   const { userId } = req.query;
+
+//   try {
+//     const appointments = await Meeting.find({ user: userId }).populate('doctor').populate('user');
+//     res.status(200).json(appointments);
+//   } catch (error) {
+//     console.error('Error fetching appointments:', error);
+//     res.status(500).json({ message: 'Failed to fetch appointments' });
+//   }
+// });
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
+});
+
 app.listen(port, () => console.log(`Server running on port ${port}`));

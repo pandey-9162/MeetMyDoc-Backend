@@ -128,7 +128,7 @@ router.get("/validate/:merchantTransactionId", async (req, res) => {
         return res.status(404).send("User not found for this transaction.");
       }
 
-      const creditsToAdd = Math.floor(amount/20000); 
+      const creditsToAdd = Math.floor(amount/10000); 
       const point = await Point.findOne({ user: userId });
       
       if (!point) {
