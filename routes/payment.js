@@ -40,7 +40,7 @@ router.use(cors(corsOptions));
 const MERCHANT_ID = "PGTESTPAYUAT115";
 const PHONE_PE_HOST_URL = "https://api-preprod.phonepe.com/apis/pg-sandbox";
 const SALT_KEY = "f94f0bb9-bcfb-4077-adc0-3f8408a17bf7";
-const APP_BE_URL = "http://localhost:3000";
+const APP_BE_URL = "https://meeturdoc.com";
 
 const generateChecksum = (payload, endpoint) => {
   const string = `${payload}${endpoint}${SALT_KEY}`;
