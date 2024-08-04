@@ -18,7 +18,7 @@ dotenv.config();
 const TOKEN_PATH = process.env.TOKEN_PATH;
 const app = express();
 const port = process.env.PORT;
-app.use(express.static(path.join(__dirname, 'frontend/build')));
+// app.use(express.static(path.join(__dirname, 'frontend/build')));
 
 
 connectDB();
