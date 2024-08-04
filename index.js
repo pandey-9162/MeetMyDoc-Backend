@@ -8,7 +8,7 @@ const { authorize, createEvent, oAuth2Client } = require('./meeting');
 const Doctor = require('./models/Doctor');
 const Meeting = require('./models/Meeting');
 const dotenv = require('dotenv');
-const { sendMail, sendMailToDoctor } = require('./server'); // Updated import
+const { sendMail, sendMailToDoctor } = require('./server'); 
 dotenv.config();
 const TOKEN_PATH = process.env.TOKEN_PATH;
 const app = express();
