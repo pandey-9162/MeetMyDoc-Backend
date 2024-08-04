@@ -26,7 +26,7 @@ const getUserIdFromTransactionId = async (merchantTransactionId) => {
   }
 };
 const corsOptions = {
-  origin: 'http://localhost:3000', 
+  origin: 'https://meeturdoc.com', 
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   allowedHeaders: 'Content-Type, Authorization',
   credentials: true,
